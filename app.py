@@ -76,15 +76,27 @@ class Comp:
     def __repr__(self): return self.name
 
 # ───────── VALUE PARSING / FORMAT ─────────
-_SI = {"p":1e-12,"n":1e-9,"u":1e-6,"µ":1e-6, "m":1e-3,"":1,"k":1e3,"meg":1e6,"M":1e6,"g":1e9,"G":1e9}
+_SI = {
+    "p": 1e-12, "n": 1e-9, "u": 1e-6, "µ": 1e-6,
+    "m": 1e-3, "": 1,
+    "k": 1e3, "K": 1e3,
+    "meg": 1e6, "M": 1e6,
+    "g": 1e9, "G": 1e9,
+}
 def parse_value(txt:str) -> float|None:
-    txt=txt.strip().lower()
+    txt = txt.strip()
     txt = re.sub(r"\s*(v|a|hz|f|h|ohm|\u03A9)\s*$", "", txt, flags=re.IGNORECASE)
     if "@" in txt: txt=txt.split("@")[0].strip()
-    if "∠" in txt or "\u2220" in txt : txt=txt.split("∠")[0].split("\u2220")[0].strip()
-    m=re.match(r"([-+]?[0-9.]+)\s*(p|n|u|µ|m|k|meg|M|g|G)?",txt)
-    if not m: return None
-    try: return float(m.group(1))*_SI.get(m.group(2) or "",1)
+    if "∠" in txt or "\u2220" in txt :
+        txt = txt.split("∠")[0].split("\u2220")[0].strip()
+    m = re.match(r"([-+]?[0-9.]+)\s*((?:[mM]eg)|M|p|n|u|µ|m|k|K|g|G)?$", txt)
+    if not m:
+        return None
+    prefix = m.group(2) or ""
+    if prefix.lower() == "meg":
+        prefix = "meg"
+    try:
+        return float(m.group(1)) * _SI.get(prefix, 1)
     except ValueError: return None
 
 def value_to_str(v:float) -> str:
@@ -787,9 +799,8 @@ class App:
             if cell_s > 3: pg.draw.rect(self.scr, (80,80,80), cell_r_b, border_th)
 
 
-    def draw_matrix_text(self): # Using the improved version from your previous response
-        # ... (Paste the improved draw_matrix_text from the previous good response here) ...
-        # ... (It was quite long, so assuming it's correctly pasted) ...
+    def draw_matrix_text(self):
+        """Render the MNA equation Y*x = b as formatted text."""
         Y, b_vec = self.circ.Y, self.circ.b 
         if Y is None or b_vec is None or Y.shape[0] == 0:
             no_data_surf = self.font_small.render("No matrix data. Solve circuit (S).", True, (200,200,200))

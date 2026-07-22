@@ -1,0 +1,74 @@
+name: Build CEI Reader APK
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Check out build branch
+        uses: actions/checkout@v4
+
+      - name: Reassemble source archive
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat ci/parts/part-* > cei-reader-android.zip.b64
+          base64 --decode cei-reader-android.zip.b64 > cei-reader-android.zip
+          echo "f454d173762e0ab03ed60d50455ae4d95c5b6e59d428401d18cda3aa2a76b678  cei-reader-android.zip" | sha256sum --check --strict
+          unzip -q cei-reader-android.zip -d build-src
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Gradle 8.14.3
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.14.3'
+
+      - name: Install Android SDK 36
+        shell: bash
+        run: |
+          set -euo pipefail
+          yes | sdkmanager --licenses >/dev/null || true
+          sdkmanager "platforms;android-36" "build-tools;36.0.0"
+
+      - name: Build debug APK
+        working-directory: build-src/cei-reader-android
+        shell: bash
+        run: |
+          set -euo pipefail
+          gradle --no-daemon --stacktrace :app:assembleDebug
+
+      - name: Verify APK
+        working-directory: build-src/cei-reader-android
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s app/build/outputs/apk/debug/app-debug.apk
+          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose --print-certs app/build/outputs/apk/debug/app-debug.apk
+          "$ANDROID_HOME/build-tools/36.0.0/aapt2" dump badging app/build/outputs/apk/debug/app-debug.apk | tee app/build/outputs/apk/debug/badging.txt
+          sha256sum app/build/outputs/apk/debug/app-debug.apk | tee app/build/outputs/apk/debug/SHA256SUMS
+          cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/RO-CEI-Reader-debug.apk
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: ro-cei-reader-debug-apk
+          path: |
+            build-src/cei-reader-android/app/build/outputs/apk/debug/RO-CEI-Reader-debug.apk
+            build-src/cei-reader-android/app/build/outputs/apk/debug/SHA256SUMS
+            build-src/cei-reader-android/app/build/outputs/apk/debug/badging.txt
+          if-no-files-found: error
+          retention-days: 1

@@ -17,7 +17,7 @@ jobs:
       - name: Check out build branch
         uses: actions/checkout@v4
 
-      - name: Reassemble source archive
+      - name: Reassemble and patch source archive
         shell: bash
         run: |
           set -euo pipefail
@@ -25,6 +25,17 @@ jobs:
           base64 --decode cei-reader-android.zip.b64 > cei-reader-android.zip
           echo "f454d173762e0ab03ed60d50455ae4d95c5b6e59d428401d18cda3aa2a76b678  cei-reader-android.zip" | sha256sum --check --strict
           unzip -q cei-reader-android.zip -d build-src
+
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path("build-src/cei-reader-android/app/src/main/res/values/themes.xml")
+          text = path.read_text()
+          old = '<style name="ShapeAppearanceOverlay.CEIReader.Portrait">'
+          new = '<style name="ShapeAppearanceOverlay.CEIReader.Portrait" parent="">'
+          if old not in text:
+              raise SystemExit("Expected CEI portrait style declaration was not found")
+          path.write_text(text.replace(old, new, 1))
+          PY
 
       - name: Set up Java 17
         uses: actions/setup-java@v4

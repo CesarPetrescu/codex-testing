@@ -1,0 +1,120 @@
+name: llama-mindcontrol CPU reproduction
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/llama-mindcontrol-cpu.yml"
+      - "experiments/llama-mindcontrol/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  reproduce:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout harness
+        uses: actions/checkout@v4
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            build-essential cmake ninja-build git curl jq libcurl4-openssl-dev
+
+      - name: Clone pinned fork
+        run: |
+          git clone --filter=blob:none https://github.com/laurencehardman/llama-mindcontrol.git llama-mindcontrol
+          cd llama-mindcontrol
+          git checkout 9cde33219df8e4d1fca4dd42c8101ddba6eff416
+          test "$(git rev-parse HEAD)" = "9cde33219df8e4d1fca4dd42c8101ddba6eff416"
+
+      - name: Configure and build CPU targets
+        working-directory: llama-mindcontrol
+        run: |
+          cmake -S . -B build -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DLLAMA_BUILD_TESTS=ON \
+            -DLLAMA_CURL=ON
+          cmake --build build --parallel "$(nproc)" --target llama-server test-reasoning-budget
+
+      - name: Run sampler unit tests
+        working-directory: llama-mindcontrol
+        run: |
+          mkdir -p ../results
+          ./build/bin/test-reasoning-budget 2>&1 | tee ../results/test-reasoning-budget.log
+
+      - name: Record build and runner metadata
+        run: |
+          {
+            echo "date_utc=$(date -u +%FT%TZ)"
+            echo "fork_commit=$(git -C llama-mindcontrol rev-parse HEAD)"
+            echo "runner_arch=$(uname -m)"
+            echo "runner_kernel=$(uname -sr)"
+            echo "cpu=$(lscpu | awk -F: '/Model name/ {sub(/^ +/, \"\", $2); print $2; exit}')"
+            echo "logical_cpus=$(nproc)"
+            echo "memory=$(free -h | awk '/Mem:/ {print $2}')"
+            echo "compiler=$(c++ --version | head -n1)"
+            echo "cmake=$(cmake --version | head -n1)"
+            echo "model=unsloth/Qwen3-0.6B-GGUF:Q4_K_M"
+          } | tee results/build-metadata.txt
+          llama-mindcontrol/build/bin/llama-server --version 2>&1 | tee -a results/build-metadata.txt || true
+
+      - name: Start CPU llama-server and fetch Q4_K_M model
+        run: |
+          llama-mindcontrol/build/bin/llama-server \
+            -hf unsloth/Qwen3-0.6B-GGUF:Q4_K_M \
+            --host 127.0.0.1 \
+            --port 8080 \
+            -c 4096 \
+            -np 1 \
+            -t "$(nproc)" \
+            --jinja \
+            > results/server.log 2>&1 &
+          echo $! > results/server.pid
+
+          for attempt in $(seq 1 240); do
+            if curl -fsS http://127.0.0.1:8080/health >/dev/null; then
+              exit 0
+            fi
+            if ! kill -0 "$(cat results/server.pid)" 2>/dev/null; then
+              echo "llama-server exited during startup"
+              tail -n 300 results/server.log
+              exit 1
+            fi
+            sleep 2
+          done
+
+          echo "llama-server did not become healthy"
+          tail -n 300 results/server.log
+          exit 1
+
+      - name: Run 27-generation controlled experiment
+        run: |
+          python3 experiments/llama-mindcontrol/run_experiment.py 2>&1 | tee results/runner.log
+
+      - name: Stop server and preserve compact logs
+        if: always()
+        run: |
+          if [[ -f results/server.pid ]]; then
+            kill "$(cat results/server.pid)" 2>/dev/null || true
+            wait "$(cat results/server.pid)" 2>/dev/null || true
+          fi
+          if [[ -f results/server.log ]]; then
+            tail -n 1200 results/server.log > results/server-tail.log
+            rm -f results/server.log
+          fi
+          git -C llama-mindcontrol log --oneline -12 > results/fork-git-log.txt || true
+          sha256sum llama-mindcontrol/build/bin/llama-server > results/llama-server.sha256 || true
+
+      - name: Upload complete reproduction bundle
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: llama-mindcontrol-cpu-results
+          path: results/
+          if-no-files-found: error
+          retention-days: 14

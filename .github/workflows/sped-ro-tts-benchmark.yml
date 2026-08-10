@@ -1,0 +1,62 @@
+name: SpeD Romanian TTS benchmark
+
+on:
+  push:
+    branches:
+      - benchmark/sped-ro-tts-2026-08-10
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    env:
+      PYTHONUNBUFFERED: "1"
+      HF_HUB_DISABLE_TELEMETRY: "1"
+
+    steps:
+      - name: Check out benchmark branch
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: benchmarks/sped_ro_tts/requirements.txt
+
+      - name: Install system audio tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends ffmpeg espeak-ng
+
+      - name: Install pinned Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r benchmarks/sped_ro_tts/requirements.txt
+          python -m pip check
+
+      - name: Compile-check benchmark
+        run: python -m py_compile benchmarks/sped_ro_tts/benchmark.py
+
+      - name: Generate Romanian speech and run SpeD
+        run: python benchmarks/sped_ro_tts/benchmark.py
+
+      - name: Capture installed package versions
+        if: always()
+        run: |
+          mkdir -p results
+          python -m pip freeze > results/pip-freeze.txt
+
+      - name: Upload audio and reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sped-ro-tts-benchmark-${{ github.run_id }}
+          path: results/
+          if-no-files-found: warn
+          retention-days: 30
+          compression-level: 6

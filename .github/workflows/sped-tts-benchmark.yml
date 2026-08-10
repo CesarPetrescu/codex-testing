@@ -6,6 +6,7 @@ on:
       - tmp-sped-tts-benchmark-20260810
     paths:
       - sped_tts_benchmark.py
+      - run_sped_tts_benchmark.py
       - .github/workflows/sped-tts-benchmark.yml
   workflow_dispatch:
 
@@ -53,7 +54,7 @@ jobs:
         shell: bash
         run: |
           set -o pipefail
-          python sped_tts_benchmark.py 2>&1 | tee benchmark.log
+          python run_sped_tts_benchmark.py 2>&1 | tee benchmark.log
 
       - name: Upload report, metrics, transcripts, and audio
         if: always()

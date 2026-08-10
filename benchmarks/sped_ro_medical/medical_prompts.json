@@ -1,0 +1,560 @@
+[
+  {
+    "id": "terms_anatomy_long",
+    "suite": "medical_terms",
+    "category": "Anatomy and long compounds",
+    "text": "Termenii sunt sternocleidomastoidian, supraclavicular, retroperitoneal, subarahnoidian și toracoabdominal.",
+    "medical_terms": [
+      "sternocleidomastoidian",
+      "supraclavicular",
+      "retroperitoneal",
+      "subarahnoidian",
+      "toracoabdominal"
+    ]
+  },
+  {
+    "id": "terms_pathophysiology",
+    "suite": "medical_terms",
+    "category": "Pathophysiology",
+    "text": "Diagnosticele includ hiponatremie, hiperkaliemie, hiperglicemie, hiperbilirubinemie și hipoalbuminemie.",
+    "medical_terms": [
+      "hiponatremie",
+      "hiperkaliemie",
+      "hiperglicemie",
+      "hiperbilirubinemie",
+      "hipoalbuminemie"
+    ]
+  },
+  {
+    "id": "terms_hematology",
+    "suite": "medical_terms",
+    "category": "Hematology terminology",
+    "text": "Hemoleucograma poate arăta leucocitoză, neutrofilie, limfopenie, trombocitopenie și pancitopenie.",
+    "medical_terms": [
+      "hemoleucograma",
+      "leucocitoză",
+      "neutrofilie",
+      "limfopenie",
+      "trombocitopenie",
+      "pancitopenie"
+    ]
+  },
+  {
+    "id": "terms_cardiology",
+    "suite": "medical_terms",
+    "category": "Cardiology terminology",
+    "text": "Termenii cardiologici sunt tahicardie supraventriculară, bradicardie sinusală, extrasistolă ventriculară și pericardită.",
+    "medical_terms": [
+      "tahicardie supraventriculară",
+      "bradicardie sinusală",
+      "extrasistolă ventriculară",
+      "pericardită"
+    ]
+  },
+  {
+    "id": "terms_pulmonology",
+    "suite": "medical_terms",
+    "category": "Pulmonology terminology",
+    "text": "Termenii pulmonari sunt bronhopneumopatie obstructivă cronică, bronșiectazii, pneumomediastin și hemoptizie.",
+    "medical_terms": [
+      "bronhopneumopatie obstructivă cronică",
+      "bronșiectazii",
+      "pneumomediastin",
+      "hemoptizie"
+    ]
+  },
+  {
+    "id": "terms_neurology",
+    "suite": "medical_terms",
+    "category": "Neurology terminology",
+    "text": "Termenii neurologici sunt hemipareză, tetrapareză, disartrie, parestezie și encefalopatie.",
+    "medical_terms": [
+      "hemipareză",
+      "tetrapareză",
+      "disartrie",
+      "parestezie",
+      "encefalopatie"
+    ]
+  },
+  {
+    "id": "terms_gastroenterology",
+    "suite": "medical_terms",
+    "category": "Gastroenterology terminology",
+    "text": "Termenii digestivi sunt hematemeză, melenă, disfagie, odinofagie, steatoree și hepatosplenomegalie.",
+    "medical_terms": [
+      "hematemeză",
+      "melenă",
+      "disfagie",
+      "odinofagie",
+      "steatoree",
+      "hepatosplenomegalie"
+    ]
+  },
+  {
+    "id": "terms_procedures",
+    "suite": "medical_terms",
+    "category": "Procedures terminology",
+    "text": "Procedurile sunt pericardiocenteză, toracocenteză, paracenteză, bronhoscopie și esofagogastroduodenoscopie.",
+    "medical_terms": [
+      "pericardiocenteză",
+      "toracocenteză",
+      "paracenteză",
+      "bronhoscopie",
+      "esofagogastroduodenoscopie"
+    ]
+  },
+  {
+    "id": "terms_microbiology",
+    "suite": "medical_terms",
+    "category": "Microbiology terminology",
+    "text": "Agenții patogeni sunt Staphylococcus aureus, Pseudomonas aeruginosa, Clostridioides difficile și Candida albicans.",
+    "medical_terms": [
+      "Staphylococcus aureus",
+      "Pseudomonas aeruginosa",
+      "Clostridioides difficile",
+      "Candida albicans"
+    ]
+  },
+  {
+    "id": "terms_medications",
+    "suite": "medical_terms",
+    "category": "Medication names",
+    "text": "Medicamentele sunt amoxicilină cu acid clavulanic, acetilcisteină, levotiroxină, clopidogrel și spironolactonă.",
+    "medical_terms": [
+      "amoxicilină cu acid clavulanic",
+      "acetilcisteină",
+      "levotiroxină",
+      "clopidogrel",
+      "spironolactonă"
+    ]
+  },
+  {
+    "id": "history_cardiopulmonary",
+    "suite": "clinical_dictation",
+    "category": "History and symptoms",
+    "text": "Pacientul acuză durere retrosternală constrictivă, dispnee de efort, palpitații și transpirații profuze.",
+    "medical_terms": [
+      "durere retrosternală constrictivă",
+      "dispnee de efort",
+      "palpitații",
+      "transpirații profuze"
+    ]
+  },
+  {
+    "id": "history_infectious",
+    "suite": "clinical_dictation",
+    "category": "History and symptoms",
+    "text": "Debutul a fost cu febră, frisoane, tuse productivă, expectorație mucopurulentă și astenie marcată.",
+    "medical_terms": [
+      "frisoane",
+      "tuse productivă",
+      "expectorație mucopurulentă",
+      "astenie marcată"
+    ]
+  },
+  {
+    "id": "physical_heart_failure",
+    "suite": "clinical_dictation",
+    "category": "Physical examination",
+    "text": "La examenul clinic se constată edeme gambiere bilaterale, turgescență jugulară și raluri crepitante bazale.",
+    "medical_terms": [
+      "edeme gambiere bilaterale",
+      "turgescență jugulară",
+      "raluri crepitante bazale"
+    ]
+  },
+  {
+    "id": "physical_abdomen",
+    "suite": "clinical_dictation",
+    "category": "Physical examination",
+    "text": "Abdomenul este suplu, depresibil, dureros în epigastru, fără apărare musculară și fără semne de iritație peritoneală.",
+    "medical_terms": [
+      "dureros în epigastru",
+      "apărare musculară",
+      "iritație peritoneală"
+    ]
+  },
+  {
+    "id": "cardiology_diagnoses",
+    "suite": "clinical_dictation",
+    "category": "Cardiology",
+    "text": "Diagnosticul este hipertensiune arterială esențială, fibrilație atrială permanentă și insuficiență cardiacă cu fracție de ejecție redusă.",
+    "medical_terms": [
+      "hipertensiune arterială esențială",
+      "fibrilație atrială permanentă",
+      "insuficiență cardiacă",
+      "fracție de ejecție redusă"
+    ]
+  },
+  {
+    "id": "cardiology_electrocardiogram",
+    "suite": "clinical_dictation",
+    "category": "Cardiology",
+    "text": "Electrocardiograma evidențiază ritm sinusal, bloc atrioventricular de gradul întâi și extrasistole ventriculare izolate.",
+    "medical_terms": [
+      "electrocardiograma",
+      "ritm sinusal",
+      "bloc atrioventricular",
+      "extrasistole ventriculare izolate"
+    ]
+  },
+  {
+    "id": "cardiology_infarction",
+    "suite": "clinical_dictation",
+    "category": "Cardiology",
+    "text": "Tabloul clinic este compatibil cu infarct miocardic acut anterior, complicat cu edem pulmonar acut.",
+    "medical_terms": [
+      "infarct miocardic acut anterior",
+      "edem pulmonar acut"
+    ]
+  },
+  {
+    "id": "pulmonology_exacerbation",
+    "suite": "clinical_dictation",
+    "category": "Pulmonology",
+    "text": "Pacientul prezintă bronhopneumopatie obstructivă cronică acutizată, cu hipoxemie și raluri sibilante expiratorii difuze.",
+    "medical_terms": [
+      "bronhopneumopatie obstructivă cronică acutizată",
+      "hipoxemie",
+      "raluri sibilante expiratorii difuze"
+    ]
+  },
+  {
+    "id": "pulmonology_pneumonia",
+    "suite": "clinical_dictation",
+    "category": "Pulmonology",
+    "text": "Diagnosticul este pneumonie interstițială bilaterală, asociată cu insuficiență respiratorie acută hipoxemică.",
+    "medical_terms": [
+      "pneumonie interstițială bilaterală",
+      "insuficiență respiratorie acută hipoxemică"
+    ]
+  },
+  {
+    "id": "neurology_stroke",
+    "suite": "clinical_dictation",
+    "category": "Neurology",
+    "text": "Diagnosticul este accident vascular cerebral ischemic în teritoriul arterei cerebrale medii stângi.",
+    "medical_terms": [
+      "accident vascular cerebral ischemic",
+      "arterei cerebrale medii stângi"
+    ]
+  },
+  {
+    "id": "neurology_exam",
+    "suite": "clinical_dictation",
+    "category": "Neurology",
+    "text": "Examenul neurologic evidențiază hemipareză dreaptă, afazie motorie și deviere conjugată a privirii.",
+    "medical_terms": [
+      "hemipareză dreaptă",
+      "afazie motorie",
+      "deviere conjugată a privirii"
+    ]
+  },
+  {
+    "id": "neurology_seizure",
+    "suite": "clinical_dictation",
+    "category": "Neurology",
+    "text": "Pacientul a prezentat o criză tonico-clonică generalizată, urmată de confuzie postictală și amnezie lacunară.",
+    "medical_terms": [
+      "criză tonico-clonică generalizată",
+      "confuzie postictală",
+      "amnezie lacunară"
+    ]
+  },
+  {
+    "id": "gastro_pancreatitis",
+    "suite": "clinical_dictation",
+    "category": "Gastroenterology and hepatology",
+    "text": "Tabloul clinic sugerează pancreatită acută edematoasă, cu durere epigastrică transfixiantă și lipază serică crescută.",
+    "medical_terms": [
+      "pancreatită acută edematoasă",
+      "durere epigastrică transfixiantă",
+      "lipază serică crescută"
+    ]
+  },
+  {
+    "id": "gastro_bleeding",
+    "suite": "clinical_dictation",
+    "category": "Gastroenterology and hepatology",
+    "text": "Endoscopia digestivă superioară evidențiază ulcer duodenal cu stigmate de sângerare recentă.",
+    "medical_terms": [
+      "endoscopia digestivă superioară",
+      "ulcer duodenal",
+      "stigmate de sângerare recentă"
+    ]
+  },
+  {
+    "id": "hepatology_cirrhosis",
+    "suite": "clinical_dictation",
+    "category": "Gastroenterology and hepatology",
+    "text": "Pacientul are ciroză hepatică decompensată, ascită în tensiune, encefalopatie hepatică și hipertensiune portală.",
+    "medical_terms": [
+      "ciroză hepatică decompensată",
+      "ascită în tensiune",
+      "encefalopatie hepatică",
+      "hipertensiune portală"
+    ]
+  },
+  {
+    "id": "nephrology_acute_injury",
+    "suite": "clinical_dictation",
+    "category": "Nephrology and endocrinology",
+    "text": "Se constată insuficiență renală acută prerenală, oligurie, azotemie și dezechilibru hidro-electrolitic.",
+    "medical_terms": [
+      "insuficiență renală acută prerenală",
+      "oligurie",
+      "azotemie",
+      "dezechilibru hidro-electrolitic"
+    ]
+  },
+  {
+    "id": "endocrinology_diabetes",
+    "suite": "clinical_dictation",
+    "category": "Nephrology and endocrinology",
+    "text": "Pacientul are diabet zaharat tip doi, neuropatie periferică și retinopatie diabetică neproliferativă.",
+    "medical_terms": [
+      "diabet zaharat tip doi",
+      "neuropatie periferică",
+      "retinopatie diabetică neproliferativă"
+    ]
+  },
+  {
+    "id": "endocrinology_thyroid",
+    "suite": "clinical_dictation",
+    "category": "Nephrology and endocrinology",
+    "text": "Ecografia tiroidiană descrie gușă multinodulară, iar analizele sugerează hipotiroidism subclinic.",
+    "medical_terms": [
+      "ecografia tiroidiană",
+      "gușă multinodulară",
+      "hipotiroidism subclinic"
+    ]
+  },
+  {
+    "id": "infectious_sepsis",
+    "suite": "clinical_dictation",
+    "category": "Infectious diseases and microbiology",
+    "text": "Diagnosticul este sepsis cu punct de plecare pulmonar, bacteriemie și disfuncție multiplă de organ.",
+    "medical_terms": [
+      "sepsis",
+      "punct de plecare pulmonar",
+      "bacteriemie",
+      "disfuncție multiplă de organ"
+    ]
+  },
+  {
+    "id": "infectious_urine_culture",
+    "suite": "clinical_dictation",
+    "category": "Infectious diseases and microbiology",
+    "text": "Urocultura a identificat Escherichia coli producătoare de beta-lactamază cu spectru extins.",
+    "medical_terms": [
+      "urocultura",
+      "Escherichia coli",
+      "beta-lactamază cu spectru extins"
+    ]
+  },
+  {
+    "id": "infectious_endocarditis",
+    "suite": "clinical_dictation",
+    "category": "Infectious diseases and microbiology",
+    "text": "Se suspectează endocardită infecțioasă pe valvă mitrală, cu hemoculturi pozitive și vegetație mobilă.",
+    "medical_terms": [
+      "endocardită infecțioasă",
+      "valvă mitrală",
+      "hemoculturi pozitive",
+      "vegetație mobilă"
+    ]
+  },
+  {
+    "id": "hematology_anemia",
+    "suite": "clinical_dictation",
+    "category": "Hematology and oncology",
+    "text": "Hemoleucograma arată anemie microcitară hipocromă, leucocitoză neutrofilă și trombocitopenie moderată.",
+    "medical_terms": [
+      "anemie microcitară hipocromă",
+      "leucocitoză neutrofilă",
+      "trombocitopenie moderată"
+    ]
+  },
+  {
+    "id": "oncology_lung",
+    "suite": "clinical_dictation",
+    "category": "Hematology and oncology",
+    "text": "Biopsia confirmă adenocarcinom pulmonar, cu invazie pleurală, adenopatii mediastinale și metastaze osoase.",
+    "medical_terms": [
+      "adenocarcinom pulmonar",
+      "invazie pleurală",
+      "adenopatii mediastinale",
+      "metastaze osoase"
+    ]
+  },
+  {
+    "id": "oncology_histopathology",
+    "suite": "clinical_dictation",
+    "category": "Hematology and oncology",
+    "text": "Examenul histopatologic descrie carcinom scuamos slab diferențiat, cu invazie limfovasculară.",
+    "medical_terms": [
+      "examenul histopatologic",
+      "carcinom scuamos slab diferențiat",
+      "invazie limfovasculară"
+    ]
+  },
+  {
+    "id": "rheumatology_arthritis",
+    "suite": "clinical_dictation",
+    "category": "Rheumatology and obstetrics",
+    "text": "Pacienta prezintă poliartrită reumatoidă seropozitivă, redoare matinală și sinovită simetrică.",
+    "medical_terms": [
+      "poliartrită reumatoidă seropozitivă",
+      "redoare matinală",
+      "sinovită simetrică"
+    ]
+  },
+  {
+    "id": "obstetrics_preeclampsia",
+    "suite": "clinical_dictation",
+    "category": "Rheumatology and obstetrics",
+    "text": "Sarcina este complicată de preeclampsie severă, proteinurie și restricție de creștere intrauterină.",
+    "medical_terms": [
+      "preeclampsie severă",
+      "proteinurie",
+      "restricție de creștere intrauterină"
+    ]
+  },
+  {
+    "id": "radiology_chest",
+    "suite": "clinical_dictation",
+    "category": "Radiology and imaging",
+    "text": "Tomografia toracică descrie opacități în sticlă mată, condensări alveolare și revărsat pleural bilateral.",
+    "medical_terms": [
+      "tomografia toracică",
+      "opacități în sticlă mată",
+      "condensări alveolare",
+      "revărsat pleural bilateral"
+    ]
+  },
+  {
+    "id": "radiology_brain",
+    "suite": "clinical_dictation",
+    "category": "Radiology and imaging",
+    "text": "Rezonanța magnetică cerebrală evidențiază leziuni demielinizante periventriculare și juxtacorticale.",
+    "medical_terms": [
+      "rezonanța magnetică cerebrală",
+      "leziuni demielinizante periventriculare",
+      "juxtacorticale"
+    ]
+  },
+  {
+    "id": "radiology_spine",
+    "suite": "clinical_dictation",
+    "category": "Radiology and imaging",
+    "text": "Rezonanța lombară arată hernie de disc între vertebrele lombare patru și cinci, cu compresie radiculară.",
+    "medical_terms": [
+      "rezonanța lombară",
+      "hernie de disc",
+      "compresie radiculară"
+    ]
+  },
+  {
+    "id": "laboratory_blood_count",
+    "suite": "clinical_dictation",
+    "category": "Laboratory values",
+    "text": "Hemoglobina este nouă virgulă opt grame pe decilitru, leucocitele sunt paisprezece mii, iar trombocitele o sută douăzeci de mii.",
+    "medical_terms": [
+      "hemoglobina",
+      "grame pe decilitru",
+      "leucocitele",
+      "trombocitele"
+    ]
+  },
+  {
+    "id": "laboratory_electrolytes",
+    "suite": "clinical_dictation",
+    "category": "Laboratory values",
+    "text": "Sodiul seric este o sută douăzeci și opt de milimoli pe litru, iar potasiul este cinci virgulă nouă.",
+    "medical_terms": [
+      "sodiul seric",
+      "milimoli pe litru",
+      "potasiul"
+    ]
+  },
+  {
+    "id": "laboratory_inflammation",
+    "suite": "clinical_dictation",
+    "category": "Laboratory values",
+    "text": "Proteina C reactivă este crescută, procalcitonina este pozitivă, iar creatinina serică este două virgulă trei miligrame pe decilitru.",
+    "medical_terms": [
+      "proteina C reactivă",
+      "procalcitonina",
+      "creatinina serică",
+      "miligrame pe decilitru"
+    ]
+  },
+  {
+    "id": "medication_antibiotics",
+    "suite": "clinical_dictation",
+    "category": "Medication and dosage",
+    "text": "Se administrează ceftriaxonă două grame intravenos o dată pe zi și azitromicină cinci sute de miligrame pe zi.",
+    "medical_terms": [
+      "ceftriaxonă",
+      "intravenos",
+      "azitromicină",
+      "miligrame"
+    ]
+  },
+  {
+    "id": "medication_cardiology",
+    "suite": "clinical_dictation",
+    "category": "Medication and dosage",
+    "text": "Tratamentul cronic include apixaban cinci miligrame de două ori pe zi, metoprolol și atorvastatină.",
+    "medical_terms": [
+      "apixaban",
+      "metoprolol",
+      "atorvastatină"
+    ]
+  },
+  {
+    "id": "medication_diabetes",
+    "suite": "clinical_dictation",
+    "category": "Medication and dosage",
+    "text": "Schema terapeutică include insulină glargin, insulină lispro și metformin cu eliberare prelungită.",
+    "medical_terms": [
+      "insulină glargin",
+      "insulină lispro",
+      "metformin cu eliberare prelungită"
+    ]
+  },
+  {
+    "id": "procedures_critical_care",
+    "suite": "clinical_dictation",
+    "category": "Procedures and critical care",
+    "text": "S-a efectuat intubație orotraheală, ventilație mecanică invazivă și montarea unui cateter venos central.",
+    "medical_terms": [
+      "intubație orotraheală",
+      "ventilație mecanică invazivă",
+      "cateter venos central"
+    ]
+  },
+  {
+    "id": "procedures_interventional",
+    "suite": "clinical_dictation",
+    "category": "Procedures and critical care",
+    "text": "Coronarografia a evidențiat stenoză critică, urmată de angioplastie cu implantare de stent farmacologic.",
+    "medical_terms": [
+      "coronarografia",
+      "stenoză critică",
+      "angioplastie",
+      "stent farmacologic"
+    ]
+  },
+  {
+    "id": "discharge_summary",
+    "suite": "clinical_dictation",
+    "category": "Discharge summary",
+    "text": "La externare, pacientul este afebril, stabil hemodinamic și respirator, cu evoluție clinică favorabilă.",
+    "medical_terms": [
+      "afebril",
+      "stabil hemodinamic și respirator",
+      "evoluție clinică favorabilă"
+    ]
+  }
+]

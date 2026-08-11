@@ -1,4 +1,4 @@
-"""Repair transport-damaged frozen benchmark chunks before CI runs.
+"""Diagnose and repair transport-damaged frozen benchmark chunks before CI.
 
 The benchmark sources are embedded as base64 chunks. Every chunk has a frozen
 length and SHA-256. This module repairs at most one insertion, deletion, or
@@ -29,7 +29,6 @@ def digest(data: bytes) -> str:
 
 
 def repair_one_edit(data: bytes, expected_len: int, expected_hash: str) -> tuple[bytes, str]:
-    """Return the unique one-edit repair and a human-readable description."""
     matches: list[tuple[bytes, str]] = []
 
     if len(data) == expected_len - 1:
@@ -57,36 +56,52 @@ def repair_one_edit(data: bytes, expected_len: int, expected_hash: str) -> tuple
                 if digest(candidate) == expected_hash:
                     matches.append((candidate, f"replaced {chr(old)!r} with {chr(char)!r} at {pos}"))
             mutable[pos] = old
-
     else:
         raise RuntimeError(
-            f"chunk length differs by more than one byte: got {len(data)}, expected {expected_len}"
+            f"length differs by more than one byte: got {len(data)}, expected {expected_len}"
         )
 
     if len(matches) != 1:
-        raise RuntimeError(f"unable to uniquely repair chunk: {len(matches)} matching one-edit repairs")
+        raise RuntimeError(f"found {len(matches)} matching one-edit repairs")
     return matches[0]
 
 
 if ROOT.exists():
+    errors: list[str] = []
     for name, (expected_len, expected_hash) in EXPECTED.items():
         path = ROOT / name
         if not path.exists():
-            raise RuntimeError(f"missing frozen benchmark chunk: {name}")
+            errors.append(f"{name}: missing")
+            continue
         data = path.read_text(encoding="utf-8").strip().encode("ascii")
         actual_hash = digest(data)
         if len(data) == expected_len and actual_hash == expected_hash:
+            print(f"OK {name}: len={len(data)} sha256={actual_hash}")
             continue
-        repaired, description = repair_one_edit(data, expected_len, expected_hash)
+
+        print(
+            f"MISMATCH {name}: len={len(data)} expected_len={expected_len} "
+            f"sha256={actual_hash} expected_sha256={expected_hash}"
+        )
+        try:
+            repaired, description = repair_one_edit(data, expected_len, expected_hash)
+        except Exception as exc:  # diagnostic pass should report every bad chunk
+            errors.append(f"{name}: {exc}")
+            continue
         path.write_bytes(repaired)
-        print(f"Repaired {name}: {description}")
+        print(f"REPAIRED {name}: {description}")
 
     for name, (expected_len, expected_hash) in EXPECTED.items():
-        data = (ROOT / name).read_bytes().strip()
+        path = ROOT / name
+        if not path.exists():
+            continue
+        data = path.read_bytes().strip()
         actual_hash = digest(data)
         if len(data) != expected_len or actual_hash != expected_hash:
-            raise RuntimeError(
-                f"frozen chunk verification failed for {name}: "
-                f"len={len(data)} sha256={actual_hash}"
+            errors.append(
+                f"{name}: verification failed len={len(data)} sha256={actual_hash}"
             )
+
+    if errors:
+        raise RuntimeError("frozen chunk errors:\n- " + "\n- ".join(dict.fromkeys(errors)))
     print(f"Verified {len(EXPECTED)} frozen benchmark chunks")

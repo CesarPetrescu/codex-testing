@@ -19,8 +19,79 @@ env:
   TOKENIZERS_PARALLELISM: "false"
 
 jobs:
+  preflight:
+    name: Verify frozen corpus and benchmark source
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Check out frozen benchmark
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Verify and reconstruct frozen benchmark bootstrap
+        run: |
+          python sitecustomize.py
+          python - <<'PY'
+          import base64
+          import hashlib
+          from pathlib import Path
+
+          root = Path("benchmarks/sped_ro_medical_robust")
+          chunks = ["00", "01", "02", "03a", "03b", "04", "05", "06"]
+          encoded = "".join((root / f"bootstrap.b64.{chunk}").read_text().strip() for chunk in chunks)
+          if len(encoded) != 48796:
+              raise SystemExit(f"unexpected bootstrap length: {len(encoded)}")
+          raw = base64.b64decode(encoded, validate=True)
+          digest = hashlib.sha256(raw).hexdigest()
+          expected = "760bdf0fbb6922878e95f1c96d9725fdb971aa623c9b860deb5dd665b49a5b2d"
+          if digest != expected:
+              raise SystemExit(f"bootstrap SHA-256 mismatch: {digest}")
+          (root / "bootstrap.py").write_bytes(raw)
+          print(f"bootstrap verified: {len(raw)} bytes, {digest}")
+          PY
+          python benchmarks/sped_ro_medical_robust/bootstrap.py
+
+      - name: Materialize and validate frozen holdout
+        run: |
+          python benchmarks/sped_ro_medical_robust/build_corpus.py
+          python -m json.tool benchmarks/sped_ro_medical_robust/holdout_prompts.json >/dev/null
+          python -m json.tool benchmarks/sped_ro_medical_robust/broad_lexicon.json >/dev/null
+          python -m json.tool benchmarks/sped_ro_medical_robust/tts_profiles.json >/dev/null
+          python -m py_compile benchmarks/sped_ro_medical_robust/frozen_corrector.py
+          python -m py_compile benchmarks/sped_ro_medical_robust/run_shard.py
+          python -m py_compile benchmarks/sped_ro_medical_robust/aggregate.py
+
+      - name: Stage verified source artifact
+        run: |
+          mkdir -p frozen_source
+          cp benchmarks/sped_ro_medical_robust/holdout_prompts.json frozen_source/
+          cp benchmarks/sped_ro_medical_robust/broad_lexicon.json frozen_source/
+          cp benchmarks/sped_ro_medical_robust/tts_profiles.json frozen_source/
+          cp benchmarks/sped_ro_medical_robust/frozen_corrector.py frozen_source/
+          cp benchmarks/sped_ro_medical_robust/run_shard.py frozen_source/
+          cp benchmarks/sped_ro_medical_robust/aggregate.py frozen_source/
+          cp benchmarks/sped_ro_medical_robust/METHODOLOGY.md frozen_source/
+          cp benchmarks/sped_ro_medical_robust/build_corpus.py frozen_source/
+          cp benchmarks/sped_ro_medical_robust/bootstrap.py frozen_source/
+          find frozen_source -type f -print0 | sort -z | xargs -0 sha256sum > frozen_source/SHA256SUMS.txt
+
+      - name: Upload verified frozen source
+        uses: actions/upload-artifact@v4
+        with:
+          name: frozen-benchmark-source
+          path: frozen_source/
+          if-no-files-found: error
+          retention-days: 30
+          compression-level: 6
+
   benchmark:
     name: ${{ matrix.voice_profile }}
+    needs: preflight
     runs-on: ubuntu-latest
     timeout-minutes: 90
     strategy:
@@ -51,7 +122,7 @@ jobs:
       VOICE_PROFILE: ${{ matrix.voice_profile }}
 
     steps:
-      - name: Check out frozen benchmark
+      - name: Check out runner dependencies
         uses: actions/checkout@v4
 
       - name: Set up Python
@@ -60,6 +131,12 @@ jobs:
           python-version: "3.11"
           cache: pip
           cache-dependency-path: benchmarks/sped_ro_tts/requirements.txt
+
+      - name: Download verified frozen source
+        uses: actions/download-artifact@v4
+        with:
+          name: frozen-benchmark-source
+          path: benchmarks/sped_ro_medical_robust
 
       - name: Install audio tools
         run: |
@@ -76,42 +153,8 @@ jobs:
           fi
           python -m pip check
 
-      - name: Recreate frozen benchmark bootstrap
-        run: |
-          python sitecustomize.py
-          python - <<'PY'
-          import base64
-          import hashlib
-          from pathlib import Path
-
-          root = Path("benchmarks/sped_ro_medical_robust")
-          chunks = ["00", "01", "02", "03a", "03b", "04", "05", "06"]
-          encoded = "".join((root / f"bootstrap.b64.{chunk}").read_text().strip() for chunk in chunks)
-          if len(encoded) != 48796:
-              raise SystemExit(f"unexpected bootstrap length: {len(encoded)}")
-          raw = base64.b64decode(encoded, validate=True)
-          digest = hashlib.sha256(raw).hexdigest()
-          expected = "760bdf0fbb6922878e95f1c96d9725fdb971aa623c9b860deb5dd665b49a5b2d"
-          if digest != expected:
-              raise SystemExit(f"bootstrap SHA-256 mismatch: {digest}")
-          (root / "bootstrap.py").write_bytes(raw)
-          print(f"bootstrap verified: {len(raw)} bytes, {digest}")
-          PY
-
-      - name: Extract frozen benchmark sources
-        run: python benchmarks/sped_ro_medical_robust/bootstrap.py
-
-      - name: Materialize frozen holdout corpus and lexicon
-        run: python benchmarks/sped_ro_medical_robust/build_corpus.py
-
-      - name: Validate frozen inputs
-        run: |
-          python -m json.tool benchmarks/sped_ro_medical_robust/holdout_prompts.json >/dev/null
-          python -m json.tool benchmarks/sped_ro_medical_robust/broad_lexicon.json >/dev/null
-          python -m json.tool benchmarks/sped_ro_medical_robust/tts_profiles.json >/dev/null
-          python -m py_compile benchmarks/sped_ro_medical_robust/frozen_corrector.py
-          python -m py_compile benchmarks/sped_ro_medical_robust/run_shard.py
-          python benchmarks/sped_ro_medical_robust/run_shard.py --profile "$VOICE_PROFILE" --validate-only
+      - name: Validate profile
+        run: python benchmarks/sped_ro_medical_robust/run_shard.py --profile "$VOICE_PROFILE" --validate-only
 
       - name: Run TTS, acoustic robustness, SpeD, and frozen corrector
         run: python benchmarks/sped_ro_medical_robust/run_shard.py --profile "$VOICE_PROFILE"
@@ -140,7 +183,7 @@ jobs:
     timeout-minutes: 30
 
     steps:
-      - name: Check out frozen benchmark
+      - name: Check out repository
         uses: actions/checkout@v4
 
       - name: Set up Python
@@ -155,45 +198,17 @@ jobs:
           path: robust_download
           merge-multiple: true
 
-      - name: Recreate frozen benchmark bootstrap
-        run: |
-          python sitecustomize.py
-          python - <<'PY'
-          import base64
-          import hashlib
-          from pathlib import Path
-
-          root = Path("benchmarks/sped_ro_medical_robust")
-          chunks = ["00", "01", "02", "03a", "03b", "04", "05", "06"]
-          encoded = "".join((root / f"bootstrap.b64.{chunk}").read_text().strip() for chunk in chunks)
-          if len(encoded) != 48796:
-              raise SystemExit(f"unexpected bootstrap length: {len(encoded)}")
-          raw = base64.b64decode(encoded, validate=True)
-          digest = hashlib.sha256(raw).hexdigest()
-          expected = "760bdf0fbb6922878e95f1c96d9725fdb971aa623c9b860deb5dd665b49a5b2d"
-          if digest != expected:
-              raise SystemExit(f"bootstrap SHA-256 mismatch: {digest}")
-          (root / "bootstrap.py").write_bytes(raw)
-          print(f"bootstrap verified: {len(raw)} bytes, {digest}")
-          PY
-
-      - name: Extract frozen benchmark sources
-        run: python benchmarks/sped_ro_medical_robust/bootstrap.py
+      - name: Download verified frozen source
+        uses: actions/download-artifact@v4
+        with:
+          name: frozen-benchmark-source
+          path: benchmarks/sped_ro_medical_robust
 
       - name: Aggregate metrics and reports
         run: |
-          python benchmarks/sped_ro_medical_robust/build_corpus.py
           python benchmarks/sped_ro_medical_robust/aggregate.py robust_download robust_aggregate
           mkdir -p robust_aggregate/source
-          cp benchmarks/sped_ro_medical_robust/holdout_prompts.json robust_aggregate/source/
-          cp benchmarks/sped_ro_medical_robust/broad_lexicon.json robust_aggregate/source/
-          cp benchmarks/sped_ro_medical_robust/tts_profiles.json robust_aggregate/source/
-          cp benchmarks/sped_ro_medical_robust/frozen_corrector.py robust_aggregate/source/
-          cp benchmarks/sped_ro_medical_robust/run_shard.py robust_aggregate/source/
-          cp benchmarks/sped_ro_medical_robust/aggregate.py robust_aggregate/source/
-          cp benchmarks/sped_ro_medical_robust/METHODOLOGY.md robust_aggregate/source/
-          cp benchmarks/sped_ro_medical_robust/build_corpus.py robust_aggregate/source/
-          cp benchmarks/sped_ro_medical_robust/bootstrap.py robust_aggregate/source/
+          cp benchmarks/sped_ro_medical_robust/* robust_aggregate/source/ || true
           find robust_aggregate -type f -print0 | sort -z | xargs -0 sha256sum > robust_aggregate/SHA256SUMS.txt
 
       - name: Upload reviewed aggregate

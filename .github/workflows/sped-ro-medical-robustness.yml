@@ -9,6 +9,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: sped-ro-medical-robust-${{ github.ref }}
+  cancel-in-progress: true
+
 env:
   PYTHONUNBUFFERED: "1"
   HF_HUB_DISABLE_TELEMETRY: "1"
@@ -74,6 +78,7 @@ jobs:
 
       - name: Recreate frozen benchmark bootstrap
         run: |
+          python sitecustomize.py
           python - <<'PY'
           import base64
           import hashlib
@@ -152,6 +157,7 @@ jobs:
 
       - name: Recreate frozen benchmark bootstrap
         run: |
+          python sitecustomize.py
           python - <<'PY'
           import base64
           import hashlib

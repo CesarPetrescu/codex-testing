@@ -74,7 +74,24 @@ jobs:
 
       - name: Recreate frozen benchmark bootstrap
         run: |
-          cat benchmarks/sped_ro_medical_robust/bootstrap.b64.* | base64 -d > benchmarks/sped_ro_medical_robust/bootstrap.py
+          python - <<'PY'
+          import base64
+          import hashlib
+          from pathlib import Path
+
+          root = Path("benchmarks/sped_ro_medical_robust")
+          chunks = ["00", "01", "02", "03a", "03b", "04", "05", "06"]
+          encoded = "".join((root / f"bootstrap.b64.{chunk}").read_text().strip() for chunk in chunks)
+          if len(encoded) != 48796:
+              raise SystemExit(f"unexpected bootstrap length: {len(encoded)}")
+          raw = base64.b64decode(encoded, validate=True)
+          digest = hashlib.sha256(raw).hexdigest()
+          expected = "760bdf0fbb6922878e95f1c96d9725fdb971aa623c9b860deb5dd665b49a5b2d"
+          if digest != expected:
+              raise SystemExit(f"bootstrap SHA-256 mismatch: {digest}")
+          (root / "bootstrap.py").write_bytes(raw)
+          print(f"bootstrap verified: {len(raw)} bytes, {digest}")
+          PY
 
       - name: Extract frozen benchmark sources
         run: python benchmarks/sped_ro_medical_robust/bootstrap.py
@@ -135,7 +152,24 @@ jobs:
 
       - name: Recreate frozen benchmark bootstrap
         run: |
-          cat benchmarks/sped_ro_medical_robust/bootstrap.b64.* | base64 -d > benchmarks/sped_ro_medical_robust/bootstrap.py
+          python - <<'PY'
+          import base64
+          import hashlib
+          from pathlib import Path
+
+          root = Path("benchmarks/sped_ro_medical_robust")
+          chunks = ["00", "01", "02", "03a", "03b", "04", "05", "06"]
+          encoded = "".join((root / f"bootstrap.b64.{chunk}").read_text().strip() for chunk in chunks)
+          if len(encoded) != 48796:
+              raise SystemExit(f"unexpected bootstrap length: {len(encoded)}")
+          raw = base64.b64decode(encoded, validate=True)
+          digest = hashlib.sha256(raw).hexdigest()
+          expected = "760bdf0fbb6922878e95f1c96d9725fdb971aa623c9b860deb5dd665b49a5b2d"
+          if digest != expected:
+              raise SystemExit(f"bootstrap SHA-256 mismatch: {digest}")
+          (root / "bootstrap.py").write_bytes(raw)
+          print(f"bootstrap verified: {len(raw)} bytes, {digest}")
+          PY
 
       - name: Extract frozen benchmark sources
         run: python benchmarks/sped_ro_medical_robust/bootstrap.py

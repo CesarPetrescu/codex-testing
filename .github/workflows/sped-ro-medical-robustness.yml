@@ -1,0 +1,166 @@
+name: SpeD Romanian medical frozen holdout robustness
+
+on:
+  push:
+    branches:
+      - benchmark/sped-ro-medical-robust-2026-08-11
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  PYTHONUNBUFFERED: "1"
+  HF_HUB_DISABLE_TELEMETRY: "1"
+  TOKENIZERS_PARALLELISM: "false"
+
+jobs:
+  benchmark:
+    name: ${{ matrix.voice_profile }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      max-parallel: 8
+      matrix:
+        voice_profile:
+          - edge_alina_normal
+          - edge_alina_fast
+          - edge_alina_slow
+          - edge_alina_highpitch
+          - edge_emil_normal
+          - edge_emil_fast
+          - edge_emil_slow
+          - edge_emil_lowpitch
+          - google_normal
+          - google_slow
+          - piper_mihai
+          - piper_lili_high
+          - piper_lili_medium
+          - piper_raluca_high
+          - piper_sanda_high
+          - piper_sanda_medium
+          - mms_seed_17
+          - mms_seed_5514
+          - espeak_stress
+    env:
+      VOICE_PROFILE: ${{ matrix.voice_profile }}
+
+    steps:
+      - name: Check out frozen benchmark
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: benchmarks/sped_ro_tts/requirements.txt
+
+      - name: Install audio tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends ffmpeg espeak-ng
+
+      - name: Install benchmark dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r benchmarks/sped_ro_tts/requirements.txt
+          if [[ "$VOICE_PROFILE" == mms_* ]]; then
+            python -m pip install --index-url https://download.pytorch.org/whl/cpu torch
+            python -m pip install "transformers>=4.45,<6" sentencepiece
+          fi
+          python -m pip check
+
+      - name: Recreate frozen benchmark bootstrap
+        run: |
+          cat benchmarks/sped_ro_medical_robust/bootstrap.b64.* | base64 -d > benchmarks/sped_ro_medical_robust/bootstrap.py
+
+      - name: Extract frozen benchmark sources
+        run: python benchmarks/sped_ro_medical_robust/bootstrap.py
+
+      - name: Materialize frozen holdout corpus and lexicon
+        run: python benchmarks/sped_ro_medical_robust/build_corpus.py
+
+      - name: Validate frozen inputs
+        run: |
+          python -m json.tool benchmarks/sped_ro_medical_robust/holdout_prompts.json >/dev/null
+          python -m json.tool benchmarks/sped_ro_medical_robust/broad_lexicon.json >/dev/null
+          python -m json.tool benchmarks/sped_ro_medical_robust/tts_profiles.json >/dev/null
+          python -m py_compile benchmarks/sped_ro_medical_robust/frozen_corrector.py
+          python -m py_compile benchmarks/sped_ro_medical_robust/run_shard.py
+          python benchmarks/sped_ro_medical_robust/run_shard.py --profile "$VOICE_PROFILE" --validate-only
+
+      - name: Run TTS, acoustic robustness, SpeD, and frozen corrector
+        run: python benchmarks/sped_ro_medical_robust/run_shard.py --profile "$VOICE_PROFILE"
+
+      - name: Capture package versions
+        if: always()
+        run: |
+          mkdir -p "robust_results/shards/$VOICE_PROFILE"
+          python -m pip freeze > "robust_results/shards/$VOICE_PROFILE/pip-freeze.txt"
+
+      - name: Upload shard
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: robust-shard-${{ matrix.voice_profile }}
+          path: robust_results/shards/
+          if-no-files-found: warn
+          retention-days: 30
+          compression-level: 6
+
+  aggregate:
+    name: Aggregate and review all shards
+    needs: benchmark
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Check out frozen benchmark
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Download all shard artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: robust-shard-*
+          path: robust_download
+          merge-multiple: true
+
+      - name: Recreate frozen benchmark bootstrap
+        run: |
+          cat benchmarks/sped_ro_medical_robust/bootstrap.b64.* | base64 -d > benchmarks/sped_ro_medical_robust/bootstrap.py
+
+      - name: Extract frozen benchmark sources
+        run: python benchmarks/sped_ro_medical_robust/bootstrap.py
+
+      - name: Aggregate metrics and reports
+        run: |
+          python benchmarks/sped_ro_medical_robust/build_corpus.py
+          python benchmarks/sped_ro_medical_robust/aggregate.py robust_download robust_aggregate
+          mkdir -p robust_aggregate/source
+          cp benchmarks/sped_ro_medical_robust/holdout_prompts.json robust_aggregate/source/
+          cp benchmarks/sped_ro_medical_robust/broad_lexicon.json robust_aggregate/source/
+          cp benchmarks/sped_ro_medical_robust/tts_profiles.json robust_aggregate/source/
+          cp benchmarks/sped_ro_medical_robust/frozen_corrector.py robust_aggregate/source/
+          cp benchmarks/sped_ro_medical_robust/run_shard.py robust_aggregate/source/
+          cp benchmarks/sped_ro_medical_robust/aggregate.py robust_aggregate/source/
+          cp benchmarks/sped_ro_medical_robust/METHODOLOGY.md robust_aggregate/source/
+          cp benchmarks/sped_ro_medical_robust/build_corpus.py robust_aggregate/source/
+          cp benchmarks/sped_ro_medical_robust/bootstrap.py robust_aggregate/source/
+          find robust_aggregate -type f -print0 | sort -z | xargs -0 sha256sum > robust_aggregate/SHA256SUMS.txt
+
+      - name: Upload reviewed aggregate
+        uses: actions/upload-artifact@v4
+        with:
+          name: sped-ro-medical-autocorrect-frozen-holdout-${{ github.run_id }}
+          path: robust_aggregate/
+          if-no-files-found: error
+          retention-days: 30
+          compression-level: 6

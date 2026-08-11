@@ -1,9 +1,10 @@
-"""Diagnose and repair transport-damaged frozen benchmark chunks before CI.
+"""Verify and repair frozen benchmark transport chunks before CI.
 
-The benchmark sources are embedded as base64 chunks. Every chunk has a frozen
-length and SHA-256. This module repairs at most one insertion, deletion, or
-substitution per damaged chunk, then verifies all chunks. It never modifies the
-benchmark corpus, lexicon, thresholds, or metrics.
+Large source chunks 02 and 06 are rebuilt from independently transferred
+1,000-character fragments. Every reconstructed chunk is then checked against a
+frozen SHA-256. A final one-character repair is permitted only when it produces
+the unique expected hash. The corpus, lexicon, thresholds, and metrics are never
+modified here.
 """
 from __future__ import annotations
 
@@ -21,6 +22,10 @@ EXPECTED: dict[str, tuple[int, str]] = {
     "bootstrap.b64.04": (7000, "d112d62894199a17ff080256bc8d6082a2e657b1ed0733f0a42d5ec3e2583135"),
     "bootstrap.b64.05": (7000, "ab1714b4efb8ee8c37af9c9274690afef3bfa382e33ad13842d9b685df0d6285"),
     "bootstrap.b64.06": (6796, "85f071379117a638ce195de0b74d1b6f05e61c42c29dd0d65d88a27ac31dd8d2"),
+}
+FRAGMENT_GROUPS: dict[str, list[str]] = {
+    "bootstrap.b64.02": [f"bootstrap.b64.02.{index:02d}" for index in range(7)],
+    "bootstrap.b64.06": [f"bootstrap.b64.06.{index:02d}" for index in range(7)],
 }
 
 
@@ -67,6 +72,16 @@ def repair_one_edit(data: bytes, expected_len: int, expected_hash: str) -> tuple
 
 
 if ROOT.exists():
+    for target_name, fragment_names in FRAGMENT_GROUPS.items():
+        fragment_paths = [ROOT / name for name in fragment_names]
+        if all(path.exists() for path in fragment_paths):
+            assembled = b"".join(path.read_bytes().strip() for path in fragment_paths)
+            (ROOT / target_name).write_bytes(assembled)
+            print(
+                f"Rebuilt {target_name} from {len(fragment_paths)} fragments: "
+                f"len={len(assembled)} sha256={digest(assembled)}"
+            )
+
     errors: list[str] = []
     for name, (expected_len, expected_hash) in EXPECTED.items():
         path = ROOT / name
@@ -85,7 +100,7 @@ if ROOT.exists():
         )
         try:
             repaired, description = repair_one_edit(data, expected_len, expected_hash)
-        except Exception as exc:  # diagnostic pass should report every bad chunk
+        except Exception as exc:
             errors.append(f"{name}: {exc}")
             continue
         path.write_bytes(repaired)
